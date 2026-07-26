@@ -17,3 +17,9 @@ venv/
 zip-check/
 zip-test/
 '@ | Out-File -Encoding utf8 .gitignore
+# crash dumps / logs
+hs_err_pid*.log
+replay_pid*.log
+run-log.txt
+__pycache__/
+*.pyc
