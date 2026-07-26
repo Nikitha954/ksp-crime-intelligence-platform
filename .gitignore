@@ -1,0 +1,19 @@
+@'
+# secrets
+.env
+application-local.properties
+
+# build output / dependencies
+target/
+node_modules/
+dist/
+client/
+packages/
+venv/
+*.zip
+
+# misc
+.sixth/
+zip-check/
+zip-test/
+'@ | Out-File -Encoding utf8 .gitignore
