@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Network, UserCheck, Shield, AlertCircle, Info, Search, GitCommit } from 'lucide-react';
 
-const API_BASE = 'https://ksp-backend-50044360353.development.catalystappsail.in/api';
+const API_BASE = 'https://ksp-crime-intelligence-platform-1-e024.onrender.com/api';
 
 export default function NetworkView() {
   const [offenders, setOffenders] = useState([]);
