@@ -1,6 +1,5 @@
 package com.example.demo.repository;
 
-
 import com.example.demo.entity.CaseMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -18,13 +17,16 @@ public interface CaseMasterRepository extends JpaRepository<CaseMaster, Long>, J
 
     List<CaseMaster> findByCrimeSubHeadNameContainingIgnoreCase(String crimeSubHeadName);
 
-    @Query("SELECT c.crimeSubHeadName as label, COUNT(c) as count FROM CaseMaster c GROUP BY c.crimeSubHeadName ORDER BY count DESC")
+    @Query("SELECT c.crimeSubHeadName as label, COUNT(c) FROM CaseMaster c GROUP BY c.crimeSubHeadName ORDER BY COUNT(c) DESC")
     List<Object[]> countByCrimeSubHead();
 
-    @Query("SELECT c.districtName as label, COUNT(c) as count FROM CaseMaster c GROUP BY c.districtName ORDER BY count DESC")
+    @Query("SELECT c.districtName as label, COUNT(c) FROM CaseMaster c GROUP BY c.districtName ORDER BY COUNT(c) DESC")
     List<Object[]> countByDistrict();
 
-    @Query("SELECT FUNCTION('YEAR', c.crimeRegisteredDate) as yr, FUNCTION('MONTH', c.crimeRegisteredDate) as mth, COUNT(c) as count FROM CaseMaster c GROUP BY FUNCTION('YEAR', c.crimeRegisteredDate), FUNCTION('MONTH', c.crimeRegisteredDate) ORDER BY yr ASC, mth ASC")
+    @Query("SELECT EXTRACT(YEAR FROM c.crimeRegisteredDate) as yr, EXTRACT(MONTH FROM c.crimeRegisteredDate) as mth, COUNT(c) as count " +
+           "FROM CaseMaster c " +
+           "GROUP BY EXTRACT(YEAR FROM c.crimeRegisteredDate), EXTRACT(MONTH FROM c.crimeRegisteredDate) " +
+           "ORDER BY yr ASC, mth ASC")
     List<Object[]> countByMonth();
 
     @Query("SELECT c.districtID, c.districtName, c.policeStationID, c.policeStationName, AVG(c.latitude), AVG(c.longitude), COUNT(c), " +
