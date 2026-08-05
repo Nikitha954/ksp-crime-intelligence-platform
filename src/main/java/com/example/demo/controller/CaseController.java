@@ -69,7 +69,7 @@ public class CaseController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/summary")
+   @GetMapping("/summary")
 public ResponseEntity<Map<String, Object>> getSummary() {
     Map<String, Object> summary = new HashMap<>();
 
