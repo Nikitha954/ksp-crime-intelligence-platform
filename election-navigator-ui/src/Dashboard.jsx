@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 import { ShieldCheck, AlertTriangle, FileText, MapPin, Filter, Calendar, Info, TrendingUp } from 'lucide-react';
 
-const API_BASE = 'https://ksp-backend-50044360353.development.catalystappsail.in/api';
+const API_BASE = 'https://ksp-crime-intelligence-platform-1-e024.onrender.com/api';
 
 export default function Dashboard() {
   const [filters, setFilters] = useState({
