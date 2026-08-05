@@ -5,9 +5,9 @@ COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Run the app on Hugging Face's required port (7860)
-FROM openjdk:17-jdk-slim
+# Run the app - listens on Render's $PORT (falls back to 8081 locally)
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-EXPOSE 7860
-ENTRYPOINT ["java", "-jar", "app.jar", "--server.port=7860"]
+EXPOSE 8081
+ENTRYPOINT ["java", "-jar", "app.jar"]
