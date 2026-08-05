@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MessageSquare, Send, Sparkles, Shield, Info, Database, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 
-const API_BASE = 'https://ksp-backend-50044360353.development.catalystappsail.in/api';
+const API_BASE = 'https://ksp-crime-intelligence-platform-1-e024.onrender.com/api';
 
 export default function ChatView() {
   const [messages, setMessages] = useState([
