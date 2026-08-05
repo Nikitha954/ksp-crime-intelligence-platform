@@ -69,68 +69,69 @@ public class CaseController {
         return ResponseEntity.ok(response);
     }
 
-   @GetMapping("/summary")
-public ResponseEntity<Map<String, Object>> getSummary() {
-    Map<String, Object> summary = new HashMap<>();
+  @GetMapping("/summary")
+    public ResponseEntity<Map<String, Object>> getSummary() {
+        Map<String, Object> summary = new HashMap<>();
+        
+        try {
+            // 1. Total FIR Count
+            long totalCases = caseRepo.count();
+            summary.put("totalCases", totalCases);
 
-    // 1. Total FIR Count
-    long totalCases = caseRepo.count();
-    summary.put("totalCases", totalCases);
-
-    // 2. Breakdown by Crime SubHead
-    List<Object[]> subHeadCounts = caseRepo.countByCrimeSubHead();
-    List<Map<String, Object>> byCrimeType = new ArrayList<>();
-    if (subHeadCounts != null) {
-        for (Object[] row : subHeadCounts) {
-            if (row != null && row.length >= 2) {
+            // 2. Breakdown by Crime SubHead
+            List<Object[]> subHeadCounts = caseRepo.countByCrimeSubHead();
+            List<Map<String, Object>> byCrimeType = new ArrayList<>();
+            for (Object[] row : subHeadCounts) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("name", row[0] != null ? row[0].toString() : "Unspecified");
-                item.put("value", row[1] != null ? row[1] : 0);
+                item.put("value", row[1]);
                 byCrimeType.add(item);
             }
-        }
-    }
-    summary.put("byCrimeType", byCrimeType);
+            summary.put("byCrimeType", byCrimeType);
 
-    // 3. Breakdown by District
-    List<Object[]> districtCounts = caseRepo.countByDistrict();
-    List<Map<String, Object>> byDistrict = new ArrayList<>();
-    if (districtCounts != null) {
-        for (Object[] row : districtCounts) {
-            if (row != null && row.length >= 2) {
+            // 3. Breakdown by District
+            List<Object[]> districtCounts = caseRepo.countByDistrict();
+            List<Map<String, Object>> byDistrict = new ArrayList<>();
+            for (Object[] row : districtCounts) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("name", row[0] != null ? row[0].toString() : "Unspecified");
-                item.put("value", row[1] != null ? row[1] : 0);
+                item.put("value", row[1]);
                 byDistrict.add(item);
             }
-        }
-    }
-    summary.put("byDistrict", byDistrict);
+            summary.put("byDistrict", byDistrict);
 
-    // 4. Monthly Trend (Null-Safe & ClassCast-Safe)
-    List<Object[]> monthCounts = caseRepo.countByMonth();
-    List<Map<String, Object>> monthlyTrend = new ArrayList<>();
-    if (monthCounts != null) {
-        for (Object[] row : monthCounts) {
-            if (row != null && row.length >= 3 && row[0] != null && row[1] != null) {
-                try {
-                    int year = Integer.parseInt(row[0].toString().replaceAll("\\D", ""));
-                    int month = Integer.parseInt(row[1].toString().replaceAll("\\D", ""));
-                    
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("month", String.format("%d-%02d", year, month));
-                    item.put("count", row[2] != null ? row[2] : 0);
-                    monthlyTrend.add(item);
-                } catch (Exception ignored) {
-                    // Skip malformed row gracefully without crashing the endpoint
-                }
+            // 4. Monthly Trend
+            List<Object[]> monthCounts = caseRepo.countByMonth();
+            List<Map<String, Object>> monthlyTrend = new ArrayList<>();
+            for (Object[] row : monthCounts) {
+                Map<String, Object> item = new HashMap<>();
+                // Safely handle numbers whether Postgres returns Double, Integer, or BigDecimal
+                int year = ((Number) row[0]).intValue();
+                int month = ((Number) row[1]).intValue();
+                item.put("month", String.format("%d-%02d", year, month));
+                item.put("count", row[2]);
+                monthlyTrend.add(item);
             }
+            summary.put("monthlyTrend", monthlyTrend);
+
+            return ResponseEntity.ok(summary);
+
+        } catch (Exception e) {
+            // IF ANYTHING CRASHES, INTERCEPT IT AND PRINT TO SCREEN
+            e.printStackTrace();
+            summary.put("CRASH_ERROR", e.getClass().getName());
+            summary.put("CRASH_MESSAGE", e.getMessage());
+            
+            List<String> trace = new ArrayList<>();
+            for(int i = 0; i < Math.min(5, e.getStackTrace().length); i++) {
+                trace.add(e.getStackTrace()[i].toString());
+            }
+            summary.put("CRASH_TRACE", trace);
+            
+            // Return 200 OK so the browser displays the JSON instead of the Whitelabel page
+            return ResponseEntity.ok(summary);
         }
     }
-    summary.put("monthlyTrend", monthlyTrend);
-
-    return ResponseEntity.ok(summary);
-}
     @GetMapping("/hotspots")
     public ResponseEntity<List<Map<String, Object>>> getHotspots() {
         LocalDate now = LocalDate.now();
