@@ -70,50 +70,67 @@ public class CaseController {
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<Map<String, Object>> getSummary() {
-        Map<String, Object> summary = new HashMap<>();
+public ResponseEntity<Map<String, Object>> getSummary() {
+    Map<String, Object> summary = new HashMap<>();
 
-        // Total FIR Count
-        long totalCases = caseRepo.count();
-        summary.put("totalCases", totalCases);
+    // 1. Total FIR Count
+    long totalCases = caseRepo.count();
+    summary.put("totalCases", totalCases);
 
-        // Breakdown by Crime SubHead
-        List<Object[]> subHeadCounts = caseRepo.countByCrimeSubHead();
-        List<Map<String, Object>> byCrimeType = new ArrayList<>();
+    // 2. Breakdown by Crime SubHead
+    List<Object[]> subHeadCounts = caseRepo.countByCrimeSubHead();
+    List<Map<String, Object>> byCrimeType = new ArrayList<>();
+    if (subHeadCounts != null) {
         for (Object[] row : subHeadCounts) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", row[0]);
-            item.put("value", row[1]);
-            byCrimeType.add(item);
+            if (row != null && row.length >= 2) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("name", row[0] != null ? row[0].toString() : "Unspecified");
+                item.put("value", row[1] != null ? row[1] : 0);
+                byCrimeType.add(item);
+            }
         }
-        summary.put("byCrimeType", byCrimeType);
-
-        // Breakdown by District
-        List<Object[]> districtCounts = caseRepo.countByDistrict();
-        List<Map<String, Object>> byDistrict = new ArrayList<>();
-        for (Object[] row : districtCounts) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", row[0]);
-            item.put("value", row[1]);
-            byDistrict.add(item);
-        }
-        summary.put("byDistrict", byDistrict);
-
-        // Monthly Trend
-        List<Object[]> monthCounts = caseRepo.countByMonth();
-        List<Map<String, Object>> monthlyTrend = new ArrayList<>();
-        for (Object[] row : monthCounts) {
-            Map<String, Object> item = new HashMap<>();
-            String yearMonth = String.format("%d-%02d", ((Number) row[0]).intValue(), ((Number) row[1]).intValue());
-            item.put("month", yearMonth);
-            item.put("count", row[2]);
-            monthlyTrend.add(item);
-        }
-        summary.put("monthlyTrend", monthlyTrend);
-
-        return ResponseEntity.ok(summary);
     }
+    summary.put("byCrimeType", byCrimeType);
 
+    // 3. Breakdown by District
+    List<Object[]> districtCounts = caseRepo.countByDistrict();
+    List<Map<String, Object>> byDistrict = new ArrayList<>();
+    if (districtCounts != null) {
+        for (Object[] row : districtCounts) {
+            if (row != null && row.length >= 2) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("name", row[0] != null ? row[0].toString() : "Unspecified");
+                item.put("value", row[1] != null ? row[1] : 0);
+                byDistrict.add(item);
+            }
+        }
+    }
+    summary.put("byDistrict", byDistrict);
+
+    // 4. Monthly Trend (Null-Safe & ClassCast-Safe)
+    List<Object[]> monthCounts = caseRepo.countByMonth();
+    List<Map<String, Object>> monthlyTrend = new ArrayList<>();
+    if (monthCounts != null) {
+        for (Object[] row : monthCounts) {
+            if (row != null && row.length >= 3 && row[0] != null && row[1] != null) {
+                try {
+                    int year = Integer.parseInt(row[0].toString().replaceAll("\\D", ""));
+                    int month = Integer.parseInt(row[1].toString().replaceAll("\\D", ""));
+                    
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("month", String.format("%d-%02d", year, month));
+                    item.put("count", row[2] != null ? row[2] : 0);
+                    monthlyTrend.add(item);
+                } catch (Exception ignored) {
+                    // Skip malformed row gracefully without crashing the endpoint
+                }
+            }
+        }
+    }
+    summary.put("monthlyTrend", monthlyTrend);
+
+    return ResponseEntity.ok(summary);
+}
     @GetMapping("/hotspots")
     public ResponseEntity<List<Map<String, Object>>> getHotspots() {
         LocalDate now = LocalDate.now();
